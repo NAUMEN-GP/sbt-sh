@@ -111,7 +111,11 @@ git push origin gh-pages*/
   lazy val additionalSettings: Seq[Project.Setting[_]] = Seq(
     localRepo := Path.userHome / "github" / "maven",
     githubRepo := "git@github.com:NAUMEN-GP/maven.git",
-    createPublishScripts <<= streams.map(s => createCreateNewRepoScript(s)),
+    createPublishScripts <<= streams.map {
+      s =>
+        createPublishToGithubScript(s)
+        createCreateNewRepoScript(s)
+    },
     publishTo <<= (version, localRepo)(localPublishTo),
     createRepo <<= (localRepo, githubRepo, streams, createPublishScripts) map ((l, g, s, _) => createRepoTask(l, g, s)),
     publishToGithubRepo <<=
