@@ -24,20 +24,14 @@ object SbtShPlugin extends Plugin with SbtShKeys {
       state
   }
 
-  /*#!/bin/sh
-cd $localMavenRepo
-git add .
-git commit -am "publish by script"
-git pull --rebase    origin gh-pages
-git rebase origin/gh-pages
-git push origin gh-pages*/
-
   def createCreateNewRepoScript(s: TaskStreams) = {
     val filename = "createNewRepo.sh"
     val content =
       """#!/bin/sh
         |cd
-        |mkdir $localMavenRepo
+        |if [ ! -d $localMavenRepo ]
+        |then mkdir $localMavenRepo
+        |fi
         |cd $localMavenRepo
         |if [ -d .git ]
         |then true
