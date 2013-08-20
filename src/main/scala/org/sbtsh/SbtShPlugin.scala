@@ -5,7 +5,6 @@ import sbt.CommandSupport._
 import sbt.Keys._
 
 
-
 trait SbtShKeys {
   val localRepo = SettingKey[File]("local-repo")
   val githubRepo = SettingKey[String]("github-repo")
@@ -14,17 +13,27 @@ trait SbtShKeys {
   val createPublishScripts = TaskKey[Unit]("create-publish-scripts")
 }
 
-object SbtShPlugin extends Plugin with SbtShKeys{
+object SbtShPlugin extends Plugin with SbtShKeys {
 
   override lazy val settings = Seq(Keys.commands += shCommand) ++ additionalSettings
 
-  def shCommand = Command.args("sh", "<shell command>") { (state, args) => 
-    val ret = args.mkString(" ") !
-    
-    state
+  def shCommand = Command.args("sh", "<shell command>") {
+    (state, args) =>
+      val ret = args.mkString(" ") !
+
+      state
   }
 
+  /*#!/bin/sh
+cd $localMavenRepo
+git add .
+git commit -am "publish by script"
+git pull --rebase    origin gh-pages
+git rebase origin/gh-pages
+git push origin gh-pages*/
+
   def createCreateNewRepoScript(s: TaskStreams) = {
+    val filename = "createNewRepo.sh"
     val content =
       """#!/bin/sh
         |cd
@@ -47,22 +56,43 @@ object SbtShPlugin extends Plugin with SbtShKeys{
         |fi
         |
       """.stripMargin
-    val f = new File("./createNewRepo.sh")
+    val f = new File(filename)
     if (!f.exists()) {
       f.createNewFile();
       IO.write(f, content)
-      "chmod +x ./createNewRepo.sh" ! s.log
+      "chmod +x ./" + filename ! s.log
     }
   }
+
+  def createPublishToGithubScript(s: TaskStreams) = {
+    val filename = "publishToGitHub.sh"
+    val content =
+      """#!/bin/sh
+        |cd $localMavenRepo
+        |git add .
+        |git commit -am "publish by script"
+        |git pull --rebase    origin gh-pages
+        |git rebase origin/gh-pages
+        |git push origin gh-pages
+        |
+      """.stripMargin
+    val f = new File(filename)
+    if (!f.exists()) {
+      f.createNewFile();
+      IO.write(f, content)
+      "chmod +x ./" + filename ! s.log
+    }
+  }
+
 
   def createRepoTask(localRep: File, gitHubRep: String, s: TaskStreams) {
     s.log.info("create repo task")
     s.log.info("current dir: " + new File("").getAbsolutePath)
     Process("./createNewRepo.sh" :: Nil,
       None,
-        "localMavenRepo" -> localRep.getAbsolutePath,
-        "gitHubRepo" -> gitHubRep
-      ) ! s.log
+      "localMavenRepo" -> localRep.getAbsolutePath,
+      "gitHubRepo" -> gitHubRep
+    ) ! s.log
   }
 
   def publishToGithubRepoTask(localRep: File, s: TaskStreams) {
@@ -78,13 +108,12 @@ object SbtShPlugin extends Plugin with SbtShKeys{
     Some(Resolver.file("file", l / (if (v.trim.endsWith("SNAPSHOT")) "snapshots" else "releases")))
 
 
-
   lazy val additionalSettings: Seq[Project.Setting[_]] = Seq(
     localRepo := Path.userHome / "github" / "maven",
-    githubRepo := "git@github.com:NAUMEN-GP/maven.git" ,
+    githubRepo := "git@github.com:NAUMEN-GP/maven.git",
     createPublishScripts <<= streams.map(s => createCreateNewRepoScript(s)),
     publishTo <<= (version, localRepo)(localPublishTo),
-    createRepo <<= (localRepo, githubRepo,  streams, createPublishScripts) map( (l, g, s, _) => createRepoTask(l, g, s)),
+    createRepo <<= (localRepo, githubRepo, streams, createPublishScripts) map ((l, g, s, _) => createRepoTask(l, g, s)),
     publishToGithubRepo <<=
       (createRepo, publish, localRepo, streams) map ((_, _, l, s) => publishToGithubRepoTask(l, s))
   )
