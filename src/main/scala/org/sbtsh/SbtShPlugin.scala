@@ -78,6 +78,11 @@ object SbtShPlugin extends Plugin with SbtShKeys {
     }
   }
 
+  def removePublishScriptTask(s: TaskStreams) {
+    IO.delete(new File("publishToGitHub.sh"))
+    IO.delete(new File("createNewRepo.sh"))
+  }
+
 
   def createRepoTask(localRep: File, gitHubRep: String, s: TaskStreams) {
     s.log.info("create repo task")
@@ -96,6 +101,8 @@ object SbtShPlugin extends Plugin with SbtShKeys {
       None,
       "localMavenRepo" -> localRep.getAbsolutePath
     ) ! s.log
+
+    removePublishScriptTask(s)
   }
 
   def localPublishTo(v: String, l: File) =
