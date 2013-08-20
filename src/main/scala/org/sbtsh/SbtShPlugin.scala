@@ -51,7 +51,7 @@ object SbtShPlugin extends Plugin with SbtShKeys{
     if (!f.exists()) {
       f.createNewFile();
       IO.write(f, content)
-      "chmod +x ./createNewRepo.sh" !
+      "chmod +x ./createNewRepo.sh" ! s.log
     }
   }
 
@@ -60,14 +60,14 @@ object SbtShPlugin extends Plugin with SbtShKeys{
       Path.userHome,
         "localMavenRepo" -> localRep.getAbsolutePath,
         "gitHubRepo" -> gitHubRep
-      )
+      ) ! s.log
   }
 
   def publishToGithubRepoTask(localRep: File, s: TaskStreams) {
     Process("./publishToGitHub.sh" :: Nil,
       Path.userHome,
       "localMavenRepo" -> localRep.getAbsolutePath
-    )
+    ) ! s.log
   }
 
   def localPublishTo(v: String, l: File) =
