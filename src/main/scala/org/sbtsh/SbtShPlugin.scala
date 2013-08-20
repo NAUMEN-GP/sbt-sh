@@ -56,20 +56,21 @@ object SbtShPlugin extends Plugin with SbtShKeys{
   }
 
   def createRepoTask(localRep: File, gitHubRep: String, s: TaskStreams) {
-     val f = new File(".")
+     val currendDir = new File("")
     s.log.info("create repo task")
-    s.log.info("current dir: " + f.getAbsolutePath)
+    s.log.info("current dir: " + currendDir.getAbsolutePath)
     Process("./createNewRepo.sh" :: Nil,
-      Path.userHome,
+      currendDir,
         "localMavenRepo" -> localRep.getAbsolutePath,
         "gitHubRepo" -> gitHubRep
       ) ! s.log
   }
 
   def publishToGithubRepoTask(localRep: File, s: TaskStreams) {
+    val currendDir = new File("")
     s.log.info("publishToGithubRepoTask")
     Process("./publishToGitHub.sh" :: Nil,
-      Path.userHome,
+      currendDir,
       "localMavenRepo" -> localRep.getAbsolutePath
     ) ! s.log
   }
