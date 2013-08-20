@@ -56,6 +56,7 @@ object SbtShPlugin extends Plugin with SbtShKeys{
   }
 
   def createRepoTask(localRep: File, gitHubRep: String, s: TaskStreams) {
+    s.log.info("create repo task")
     Process("./createNewRepo.sh" :: Nil,
       Path.userHome,
         "localMavenRepo" -> localRep.getAbsolutePath,
@@ -64,6 +65,7 @@ object SbtShPlugin extends Plugin with SbtShKeys{
   }
 
   def publishToGithubRepoTask(localRep: File, s: TaskStreams) {
+    s.log.info("publishToGithubRepoTask")
     Process("./publishToGitHub.sh" :: Nil,
       Path.userHome,
       "localMavenRepo" -> localRep.getAbsolutePath
