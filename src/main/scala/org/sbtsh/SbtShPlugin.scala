@@ -56,7 +56,9 @@ object SbtShPlugin extends Plugin with SbtShKeys{
   }
 
   def createRepoTask(localRep: File, gitHubRep: String, s: TaskStreams) {
+     val f = new File(".")
     s.log.info("create repo task")
+    s.log.info("current dir: " + f.getAbsolutePath)
     Process("./createNewRepo.sh" :: Nil,
       Path.userHome,
         "localMavenRepo" -> localRep.getAbsolutePath,
