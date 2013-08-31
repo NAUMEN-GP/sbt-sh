@@ -120,7 +120,7 @@ object SbtShPlugin extends Plugin with SbtShKeys {
     publishTo <<= (version, localRepo)(localPublishTo),
     createRepo <<= (localRepo, githubRepo, streams, createPublishScripts) map ((l, g, s, _) => createRepoTask(l, g, s)),
     publishToGithubRepo <<=
-      (createRepo, publish, localRepo, streams) map ((_, _, l, s) => publishToGithubRepoTask(l, s))
+      (createRepo, clean, publish, localRepo, streams) map ((_, _, _, l, s) => publishToGithubRepoTask(l, s))
   )
 
 }
